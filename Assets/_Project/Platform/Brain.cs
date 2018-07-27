@@ -10,17 +10,47 @@ public class Replay
 
     public Replay (double zRotation, double ballPositionX, double ballVelocityX, double reward)
     {
-        States = new List<double>();
-        States.Add(zRotation);
-        States.Add(ballPositionX);
-        States.Add(ballVelocityX);
+        States = new List<double>
+        {
+            zRotation,
+            ballPositionX,
+            ballVelocityX
+        };
         Reward = reward;
     }
 }
 
 public class Brain : MonoBehaviour 
 {
+    [SerializeField] private GameObject _ball;
+    private Vector3 _ballStartPosition;
+
+    private Ann _ann;
+    // List of past actions and rewards.
+    private List<Replay> _replayMemory = new List<Replay>();
+
+    // Reward to associate with actions.
+    private float _reward = 0f;
+    private int _memoryCapacity = 10000;
+    // How much future states affect rewards.
+    private float _discount = 0.99f;
     
+    // Chance of picking random action.
+    private float _exploreRate = 100f;
+    private float _maxExploreRate = 100f;
+    private float _minExploreRate = 0.01f;
+    // Decay amount for each update.
+    private float _exploreDecay = 0.0001f;
+
+    // How many times the ball is dropped.
+    private int _failCount = 0;
+    private float _timer = 0f;
+    private float _maxBalanceTime = 0f;
+
+    // Max angle to apply to tilting each update.
+    // Make sure the value is large enough to achieve success.
+    private float _tiltSpeed = 0.5f;
+
 
 	// Use this for initialization
 	void Start () 
