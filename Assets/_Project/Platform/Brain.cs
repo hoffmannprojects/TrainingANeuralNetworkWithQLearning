@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.UI;
 
+#region Helper Classes
 public class Replay
 {
     public List<double> States { get; set; }
     public double Reward { get; set; }
 
-    public Replay (double zRotation, double ballPositionX, double ballVelocityX, double reward)
+    public Replay(double zRotation, double ballPositionX, double ballVelocityX, double reward)
     {
         States = new List<double>
         {
@@ -19,10 +22,14 @@ public class Replay
         Reward = reward;
     }
 }
+#endregion
 
-public class Brain : MonoBehaviour 
+public class Brain : MonoBehaviour
 {
+    #region Fields
     [SerializeField] private GameObject _ball;
+    [SerializeField] private GameObject _stats;
+    private Text[] _statsTexts;
     private Vector3 _ballStartPosition;
 
     private Ann _ann;
@@ -34,7 +41,7 @@ public class Brain : MonoBehaviour
     private int _memoryCapacity = 10000;
     // How much future states affect rewards.
     private float _discount = 0.99f;
-    
+
     // Chance of picking random action.
     private float _exploreRate = 100f;
     private float _maxExploreRate = 100f;
@@ -50,17 +57,33 @@ public class Brain : MonoBehaviour
     // Max angle to apply to tilting each update.
     // Make sure the value is large enough to achieve success.
     private float _tiltSpeed = 0.5f;
+    #endregion
 
+    // Use this for initialization
+    void Start()
+    {
+        _ann = new Ann(3, 2, 1, 6, 0.2);
 
-	// Use this for initialization
-	void Start () 
-	{
-		
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-		
-	}
+        _statsTexts = _stats.GetComponentsInChildren<Text>();
+        Assert.IsNotNull(_statsTexts);
+
+        Assert.IsNotNull(_ball);
+        _ballStartPosition = _ball.transform.position;
+
+        Time.timeScale = 5.0f;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        UpdateStats();
+    }
+
+    private void UpdateStats()
+    {
+        _statsTexts[0].text = "Fails: " + _failCount;
+        _statsTexts[1].text = "Decay Rate: " + _exploreRate;
+        _statsTexts[2].text = "Last Best Balance: " + _maxBalanceTime;
+        _statsTexts[3].text = "This Balance: " + _timer;
+    }
 }
