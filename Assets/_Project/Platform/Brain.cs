@@ -60,7 +60,7 @@ public class Brain : MonoBehaviour
     #endregion
 
     // Use this for initialization
-    void Start()
+    private void Start()
     {
         _ann = new Ann(3, 2, 1, 6, 0.2);
 
@@ -74,9 +74,21 @@ public class Brain : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         UpdateStats();
+    }
+
+    private void FixedUpdate()
+    {
+        _timer += Time.deltaTime;
+
+        var states = new List<double>
+        {
+            transform.rotation.z,
+            _ball.transform.position.x,
+            _ball.GetComponent<Rigidbody>().angularVelocity.x
+        };
     }
 
     private void UpdateStats()
@@ -85,5 +97,13 @@ public class Brain : MonoBehaviour
         _statsTexts[1].text = "Decay Rate: " + _exploreRate;
         _statsTexts[2].text = "Last Best Balance: " + _maxBalanceTime;
         _statsTexts[3].text = "This Balance: " + _timer;
+    }
+
+    private void HandleInput()
+    {
+        if (Input.GetKeyDown("space"))
+        {
+            _ball.transform.position = _ballStartPosition;
+        }
     }
 }
