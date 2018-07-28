@@ -87,8 +87,69 @@ public class Brain : MonoBehaviour
         {
             transform.rotation.z,
             _ball.transform.position.x,
-            _ball.GetComponent<Rigidbody>().angularVelocity.x
+            _ball.GetComponent<Rigidbody>().angularVelocity.z // TODO: Double check axis!
         };
+
+        var qValues = new List<double>();
+        qValues = SoftMax(_ann.CalcOutput(states));
+
+        double maxQValue = qValues.Max();
+        int maxQValueIndex = qValues.ToList().IndexOf(maxQValue);
+
+        // Explore.
+        _exploreRate = Mathf.Clamp(_exploreRate - _exploreDecay, _minExploreRate, _maxExploreRate);
+        if (Random.Range(0, 100) < _exploreRate)
+        {
+            maxQValueIndex = Random.Range(0, 2);
+        }
+
+        // Rotate based on chosen maxQValue.
+        if (maxQValueIndex == 0)
+        {
+            // Rotate to the right.
+            transform.Rotate(Vector3.forward, _tiltSpeed * (float)qValues[maxQValueIndex]);
+        }
+        else if (maxQValueIndex == 0)
+        {
+            // Rotate to the left.
+            transform.Rotate(Vector3.forward, -_tiltSpeed * (float)qValues[maxQValueIndex]);
+        }
+
+        // Reward based on the state of the ball.
+        if (_ball.GetComponent<BallState>().Dropped)
+        {
+            _reward = -1.0f;
+        }
+        else
+        {
+            _reward = 0.1f;
+        }
+
+        // Set up replay memory.
+        var lastMemory = new Replay(
+            transform.rotation.z,
+            _ball.transform.position.x,
+            _ball.GetComponent<Rigidbody>().angularVelocity.x,
+            _reward);
+
+        // Ensure _memoryCapacity is not exceeded.
+        if (_replayMemory.Count > _memoryCapacity)
+        {
+            _replayMemory.RemoveAt(0);
+        }
+
+        _replayMemory.Add(lastMemory);
+
+        // Execute Q-Learning training when ball is dropped.
+        if (_ball.GetComponent<BallState>().Dropped)
+        {
+            Train();
+        }
+    }
+
+    private void Train()
+    {
+        // TODO: Implementation.
     }
 
     private void UpdateStats()
@@ -105,5 +166,10 @@ public class Brain : MonoBehaviour
         {
             _ball.transform.position = _ballStartPosition;
         }
+    }
+
+    private List<double> SoftMax(List<double> outputs)
+    {
+        return outputs;    // TODO: Actual implementation
     }
 }
