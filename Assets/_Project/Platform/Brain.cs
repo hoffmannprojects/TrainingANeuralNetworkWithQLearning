@@ -143,13 +143,61 @@ public class Brain : MonoBehaviour
         // Execute Q-Learning training when ball is dropped.
         if (_ball.GetComponent<BallState>().Dropped)
         {
-            Train();
+            TrainQLearning(maxQValue);
         }
     }
 
-    private void Train()
+    private void TrainQLearning(double maxQValue)
     {
-        // TODO: Implementation.
+        for (int i = _replayMemory.Count - 1; i >= 0; i--)
+        {
+            var currentTrainingOutputs = new List<double>();
+            currentTrainingOutputs = SoftMax(_ann.CalcOutput(_replayMemory[i].States));
+
+            double currentMaxQ = currentTrainingOutputs.Max();
+            // Best action according to the current memories.
+            int action = currentTrainingOutputs.ToList().IndexOf(currentMaxQ);
+
+            double feedback = 0d;
+            var nextTrainingOutputs = new List<double>();
+
+            // Last memory in list OR memory has -1 reward (ball dropped).
+            if (i == _replayMemory.Count - 1 || _replayMemory[i].Reward == -1)
+            {
+                feedback = _replayMemory[i].Reward;
+            }
+            else
+            {
+                nextTrainingOutputs = SoftMax(_ann.CalcOutput(_replayMemory[i + 1].States));
+                maxQValue = nextTrainingOutputs.Max();
+                // Bellman equasion.
+                feedback = _replayMemory[i].Reward + _discount * maxQValue;
+            }
+
+            currentTrainingOutputs[action] = feedback;
+            _ann.Train(_replayMemory[i].States, currentTrainingOutputs);
+        }
+
+        UpdateMaxBalanceTime();
+        ResetOnFail();
+    }
+
+    private void ResetOnFail()
+    {
+        _ball.GetComponent<BallState>().Dropped = false;
+        transform.rotation = Quaternion.identity;
+        ResetBall();
+        _replayMemory.Clear();
+        _failCount++;
+    }
+
+    private void UpdateMaxBalanceTime()
+    {
+        if (_timer > _maxBalanceTime)
+        {
+            _maxBalanceTime = _timer;
+        }
+        _timer = 0;
     }
 
     private void UpdateStats()
@@ -171,5 +219,10 @@ public class Brain : MonoBehaviour
     private List<double> SoftMax(List<double> outputs)
     {
         return outputs;    // TODO: Actual implementation
+    }
+
+    private void ResetBall()
+    {
+        // TODO: Implementation.
     }
 }
