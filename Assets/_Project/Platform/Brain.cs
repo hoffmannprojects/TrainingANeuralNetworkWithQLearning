@@ -109,13 +109,14 @@ public class Brain : MonoBehaviour
             // Rotate to the right.
             transform.Rotate(Vector3.forward, _tiltSpeed * (float)qValues[maxQValueIndex]);
         }
-        else if (maxQValueIndex == 0)
+        else if (maxQValueIndex == 1)
         {
             // Rotate to the left.
             transform.Rotate(Vector3.forward, -_tiltSpeed * (float)qValues[maxQValueIndex]);
         }
 
         // Reward based on the state of the ball.
+        Assert.IsNotNull(_ball.GetComponent<BallState>());
         if (_ball.GetComponent<BallState>().Dropped)
         {
             _reward = -1.0f;
@@ -203,9 +204,9 @@ public class Brain : MonoBehaviour
     private void UpdateStats()
     {
         _statsTexts[0].text = "Fails: " + _failCount;
-        _statsTexts[1].text = "Decay Rate: " + _exploreRate;
-        _statsTexts[2].text = "Last Best Balance: " + _maxBalanceTime;
-        _statsTexts[3].text = "This Balance: " + _timer;
+        _statsTexts[1].text = "Explore rate: " + _exploreRate;
+        _statsTexts[2].text = "Best balance time: " + _maxBalanceTime;
+        _statsTexts[3].text = "Current balance time: " + _timer;
     }
 
     private void HandleInput()
