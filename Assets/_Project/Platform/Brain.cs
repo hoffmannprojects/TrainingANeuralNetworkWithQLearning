@@ -223,6 +223,8 @@ public class Brain : MonoBehaviour
 
     private void ResetBall()
     {
-        // TODO: Implementation.
+        _ball.transform.position = _ballStartPosition;
+        _ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        _ball.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
     }
 }
