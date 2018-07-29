@@ -215,10 +215,28 @@ public class Brain : MonoBehaviour
             _ball.transform.position = _ballStartPosition;
         }
     }
-
-    private List<double> SoftMax(List<double> outputs)
+    /// <summary>
+    /// Normalizes all values to a range between 0 and 1,
+    /// so that all values add up to 1.
+    /// </summary>
+    /// <returns>A normalized list of values that adds up to 1.</returns>
+    /// <param name="values">Values to normalize (here: outputs of the NN).</param>
+    private List<double> SoftMax(List<double> values)
     {
-        return outputs;    // TODO: Actual implementation
+        double max = values.Max();
+
+        float scale = 0f;
+        for (int i = 0; i < values.Count; i++)
+        {
+            scale += Mathf.Exp((float)(values[i] - max));
+        }
+
+        var result = new List<double>();
+        for (int i = 0; i < values.Count; i++)
+        {
+            result.Add(Mathf.Exp((float)(values[i] - max)) / scale);
+        }
+        return result;
     }
 
     private void ResetBall()
