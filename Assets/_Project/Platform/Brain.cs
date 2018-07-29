@@ -43,7 +43,8 @@ public class Brain : MonoBehaviour
     private float _discount = 0.99f;
 
     // Chance of picking random action.
-    private float _exploreRate = 100f;
+    [SerializeField] private bool _useExploration = false;
+    [SerializeField] private float _exploreRate = 100f;
     private float _maxExploreRate = 100f;
     private float _minExploreRate = 0.01f;
     // Decay amount for each update.
@@ -98,11 +99,12 @@ public class Brain : MonoBehaviour
 
         // Explore.
         _exploreRate = Mathf.Clamp(_exploreRate - _exploreDecay, _minExploreRate, _maxExploreRate);
-        if (Random.Range(0, 100) < _exploreRate)
+        if ((Random.Range(0, 100) < _exploreRate) && (_useExploration == true))
         {
             maxQValueIndex = Random.Range(0, 2);
         }
 
+        // TOTO: Check case for 0 and 1 and when it relates to left/right.
         // Rotate based on chosen maxQValue.
         if (maxQValueIndex == 0)
         {
